@@ -63,6 +63,18 @@
 #define MIFARE_CMD_INCREMENT                (0xC1)
 #define MIFARE_CMD_STORE                    (0xC2)
 
+//ST25TB Command
+#define ST25TB_CMD_INITIATE                     (0x06)
+#define ST25TB_CMD_SELECT                       (0x0E)
+#define ST25TB_CMD_RESET_TO_INVENTORY           (0x0C)
+#define ST25TB_CMD_GET_UID                      (0x0B)
+#define ST25TB_CMD_READ_BLOCK                   (0x08)
+#define ST25TB_CMD_WRITE_BLOCK                  (0x09)
+#define ST25TB_4K_BLOCK_NUM                     (0x80)
+#define ST25TB_4K_SYSTEM_BLOCK                  (0xFF)
+#define ST25TB_BLOCK_SIZE                       (0x04)
+#define ST25TB_UID_SIZE                         (0x08)
+
 // FeliCa Commands
 #define FELICA_CMD_POLLING                  (0x00)
 #define FELICA_CMD_REQUEST_SERVICE          (0x02)

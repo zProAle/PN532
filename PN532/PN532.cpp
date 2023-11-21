@@ -403,6 +403,158 @@ bool PN532::startPassiveTargetIDDetection(uint8_t cardbaudrate) {
     }
 }
 
+/***** ISO14443B SRIX4K Commands ******/
+
+/**************************************************************************/
+/*!
+    Waits for an ISO14443B target to enter the field
+*/
+/**************************************************************************/
+bool PN532::st25tb_init()
+{
+    pn532_packetbuffer[0] = PN532_COMMAND_INLISTPASSIVETARGET;
+    pn532_packetbuffer[1] = 0x01; // Max 1 target at once
+    pn532_packetbuffer[2] = 0x03; // Set target to 106 kbps type B (ISO/IEC14443-3B)
+    pn532_packetbuffer[3] = 0x00; // Init data
+
+    if (HAL(writeCommand)(pn532_packetbuffer, 4)) {
+        return 0x0;  // command failed
+    }
+}
+
+bool PN532::st25tb_select()
+{
+    // INITIATE
+    pn532_packetbuffer[0] = PN532_COMMAND_INCOMMUNICATETHRU;
+    pn532_packetbuffer[1] = ST25TB_CMD_INITIATE;
+    pn532_packetbuffer[2] = 0x00;
+
+    if (HAL(writeCommand)(pn532_packetbuffer, 3)) {
+        return 0x0;  // command failed
+    }
+
+    // read data packet
+    if (HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer)) < 0) {
+        return 0x0;
+    }
+
+    // Check for errors
+    if (pn532_packetbuffer[0] != 0x00) {
+        return 0;
+    }
+
+    // SELECT
+    uint8_t chip_id = pn532_packetbuffer[1];
+    pn532_packetbuffer[0] = PN532_COMMAND_INCOMMUNICATETHRU;
+    pn532_packetbuffer[1] = ST25TB_CMD_SELECT;
+    pn532_packetbuffer[2] = chip_id;
+
+    if (HAL(writeCommand)(pn532_packetbuffer, 3)) {
+        return 0x0;  // command failed
+    }
+
+    // read data packet
+    if (HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer)) < 0) {
+        return 0x0;
+    }
+
+    // Check for errors
+    if (pn532_packetbuffer[0] != 0x00) {
+        return 0;
+    }
+
+    return 1;
+}
+
+bool PN532::st25tb_get_uid(uint8_t *uid)
+{
+    // GET_UID
+    pn532_packetbuffer[0] = PN532_COMMAND_INCOMMUNICATETHRU;
+    pn532_packetbuffer[1] = ST25TB_CMD_GET_UID;
+
+    if (HAL(writeCommand)(pn532_packetbuffer, 2)) {
+        return 0x0;  // command failed
+    }
+
+    // read data packet
+    if (HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer)) < 0) {
+        return 0x0;
+    }
+    
+    // Check for errors
+    if (pn532_packetbuffer[0] != 0x00) {
+        return 0;
+    }
+
+    uid[0] = pn532_packetbuffer[1];
+    uid[1] = pn532_packetbuffer[2];
+    uid[2] = pn532_packetbuffer[3];
+    uid[3] = pn532_packetbuffer[4];
+    uid[4] = pn532_packetbuffer[5];
+    uid[5] = pn532_packetbuffer[6];
+    uid[6] = pn532_packetbuffer[7];
+    uid[7] = pn532_packetbuffer[8];
+
+    return 1;
+}
+
+bool PN532::st25tb_reset_to_inventory()
+{
+    // RESET_TO_INVENTORY
+    pn532_packetbuffer[0] = PN532_COMMAND_INCOMMUNICATETHRU;
+    pn532_packetbuffer[1] = ST25TB_CMD_RESET_TO_INVENTORY;
+
+    if (HAL(writeCommand)(pn532_packetbuffer, 2)) {
+        return 0x0;  // command failed
+    }
+
+    return 1;
+}
+
+bool PN532::st25tb_read_block(uint8_t address, uint8_t *block)
+{
+    pn532_packetbuffer[0] = PN532_COMMAND_INCOMMUNICATETHRU;
+    pn532_packetbuffer[1] = ST25TB_CMD_READ_BLOCK;
+    pn532_packetbuffer[2] = address;
+
+    if (HAL(writeCommand)(pn532_packetbuffer, 3)) {
+        return 0x0;  // command failed
+    }
+
+    // read data packet
+    if (HAL(readResponse)(pn532_packetbuffer, sizeof(pn532_packetbuffer)) < 0) {
+        return 0x0;
+    }
+
+    // Check for errors
+    if (pn532_packetbuffer[0] != 0x00) {
+        return 0;
+    }
+
+    block[0] = pn532_packetbuffer[1];
+    block[1] = pn532_packetbuffer[2];
+    block[2] = pn532_packetbuffer[3];
+    block[3] = pn532_packetbuffer[4];
+
+    return 1;
+}
+
+bool PN532::st25tb_write_block(uint8_t address, uint8_t *block)
+{
+    pn532_packetbuffer[0] = PN532_COMMAND_INCOMMUNICATETHRU;
+    pn532_packetbuffer[1] = ST25TB_CMD_WRITE_BLOCK;
+    pn532_packetbuffer[2] = address;
+    pn532_packetbuffer[3] = block[0];
+    pn532_packetbuffer[4] = block[1];
+    pn532_packetbuffer[5] = block[2];
+    pn532_packetbuffer[6] = block[3];
+
+    if (HAL(writeCommand)(pn532_packetbuffer, 7)) {
+        return 0x0;  // command failed
+    }
+
+    return 1;
+}
 /**************************************************************************/
 /*!
     Waits for an ISO14443A target to enter the field
