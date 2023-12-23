@@ -185,6 +185,14 @@ public:
     uint8_t mifareclassic_FormatNDEF (void);
     uint8_t mifareclassic_WriteNDEFURI (uint8_t sectorNumber, uint8_t uriIdentifier, const char *url);
 
+    // St25tb functions
+    bool st25tb_init();
+    bool st25tb_select();
+    bool st25tb_get_uid(uint8_t *uid);
+    bool st25tb_read_block(uint8_t address, uint8_t *block);
+    bool st25tb_write_block(uint8_t address, uint8_t *block);
+    bool st25tb_reset_to_inventory();
+
     // Mifare Ultralight functions
     uint8_t mifareultralight_ReadPage (uint8_t page, uint8_t *buffer);
     uint8_t mifareultralight_WritePage (uint8_t page, uint8_t *buffer);
